@@ -67,7 +67,8 @@ def callback(call):
     global regionId
     regionId = call.data
     print(call.message)
-    bot.set_state(user_id=call.message.from_user.id, state=UserState.choice_city, chat_id=call.message.chat.id)
+    bot.set_state(user_id=call.from_user.id, state=UserState.choice_city, chat_id=call.message.chat.id)
+    bot.send_message(chat_id=call.from_user.id, text='Я тебя понял')
 
 
 @bot.message_handler(state=UserState.choice_city)
