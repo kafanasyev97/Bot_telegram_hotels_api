@@ -1,16 +1,12 @@
-import requests
+from loader import bot
 from telebot.handler_backends import State, StatesGroup
-import telebot
 from telebot import types
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from telebot.custom_filters import StateFilter
-from telebot.storage import StateMemoryStorage
+import requests
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from datetime import date, datetime, timedelta
 
-TOKEN = '6023364429:AAHhRuf-xjxivwjHNX_o0kFlkzyQZO6hVYc'
-state_storage = StateMemoryStorage()
-bot = telebot.TeleBot(TOKEN, state_storage=state_storage)
+
 min_date = ''
 
 
@@ -73,7 +69,7 @@ class UserState(StatesGroup):
     photo_count = State()
 
 
-@bot.message_handler(commands=['lowprice'])
+@bot.message_handler(commands=['commands'])
 def first_low(message: types.Message) -> None:
     bot.set_state(user_id=message.from_user.id, state=UserState.city, chat_id=message.chat.id)
     bot.send_message(chat_id=message.chat.id, text='Введите город:')
@@ -216,17 +212,22 @@ def get_hotels_count(message: types.Message) -> None:
         print(data)
 
         response = requests.request("POST", url2, json=payload, headers=headers2)
+        # print(response.text)
         id_price = dict()
+        distance = list()
+        index = 0
         for hotel in response.json()['data']['propertySearch']['properties']:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
+            distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 
         for iden, price in id_price.items():
             payload_detail['propertyId'] = iden
             resp = requests.request("POST", url3, json=payload_detail, headers=headers2)
             name = resp.json()['data']['propertyInfo']['summary']['name']
             address = resp.json()['data']['propertyInfo']['summary']['location']['address']['firstAddressLine']
-            result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}'
+            result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}\nРасстояние до центра: {distance[index]} миль'
             bot.send_message(message.chat.id, text=result_text)
+            index += 1
 
         bot.delete_state(message.from_user.id, message.chat.id)
 
@@ -247,13 +248,16 @@ def get_hotels_count(message: types.Message) -> None:
         payload['checkOutDate']['year'] = int(data['date_out']['y'])
         payload['rooms'][0]['adults'] = int(data['people_count'])
         payload['resultsSize'] = int(data['hotels_count'])
-        print(data)
+        # print(data)
 
         response = requests.request("POST", url2, json=payload, headers=headers2)
-            # print(response.text)
+        print(response.text)
         id_price = dict()
+        distance = list()
+        index = 0
         for hotel in response.json()['data']['propertySearch']['properties']:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
+            distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 
         for iden, price in id_price.items():
             payload_detail['propertyId'] = iden
@@ -261,8 +265,10 @@ def get_hotels_count(message: types.Message) -> None:
             # print(resp.text)
             name = resp.json()['data']['propertyInfo']['summary']['name']
             address = resp.json()['data']['propertyInfo']['summary']['location']['address']['firstAddressLine']
-            result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}\nФотографии:'
+            result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}' \
+                          f'\nРасстояние до центра: {distance[index]} миль\nФотографии:'
             bot.send_message(message.chat.id, text=result_text)
+            index += 1
                 # photo = resp.json()['data']['propertyInfo']['propertyGallery']['images'][5]['image']['url']
             for num in range(int(data['photo_count'])):
                 photo = resp.json()['data']['propertyInfo']['propertyGallery']['images'][num]['image']['url']
@@ -271,16 +277,3 @@ def get_hotels_count(message: types.Message) -> None:
         bot.delete_state(message.from_user.id, message.chat.id)
     else:
         bot.send_message(chat_id=message.chat.id, text='Некорректные данные.\nПожалуйста, повторите ввод:')
-
-
-@bot.message_handler()
-def any(message: types.Message):
-    if message.text == 'id':
-        bot.send_message(message.chat.id, text=f'Твой id: {message.from_user.id}')
-    else:
-        bot.send_message(message.from_user.id, text=f'{message.text} - это неправильное сообщение')
-
-
-if __name__ == '__main__':
-    bot.add_custom_filter(StateFilter(bot))
-    bot.polling(none_stop=True)
