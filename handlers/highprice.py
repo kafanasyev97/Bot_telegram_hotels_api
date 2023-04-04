@@ -39,11 +39,11 @@ payload = {
                     }
                 ],
                 "resultsStartingIndex": 0,
-                "resultsSize": 0,
+                "resultsSize": 200,
                 "sort": "PRICE_LOW_TO_HIGH",
                 "filters": {"price": {
-                    "max": 200,
-                    "min": 10
+                    "max": 10000,
+                    "min": 400
                 }}
             }
 headers2 = {
@@ -61,7 +61,7 @@ payload_detail = {
 }
 
 
-@bot.message_handler(commands=['lowprice'])
+@bot.message_handler(commands=['highprice'])
 def first_low(message: types.Message) -> None:
     bot.set_state(user_id=message.from_user.id, state=UserState.city, chat_id=message.chat.id)
     bot.send_message(chat_id=message.chat.id, text='Введите город:')
@@ -200,15 +200,17 @@ def get_hotels_count(message: types.Message) -> None:
         payload['checkOutDate']['month'] = int(data['date_out']['m'])
         payload['checkOutDate']['year'] = int(data['date_out']['y'])
         payload['rooms'][0]['adults'] = int(data['people_count'])
-        payload['resultsSize'] = int(data['hotels_count'])
+        # payload['resultsSize'] = int(data['hotels_count'])
         # print(data)
 
         response = requests.request("POST", url2, json=payload, headers=headers2)
-        # print(response.text)
+        print(response.text)
         id_price = dict()
         distance = list()
         index = 0
-        for hotel in response.json()['data']['propertySearch']['properties']:
+        rev_list = response.json()['data']['propertySearch']['properties']
+        rev_list.reverse()
+        for hotel in rev_list[:int(data['hotels_count'])]:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
             distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 
@@ -239,7 +241,7 @@ def get_hotels_count(message: types.Message) -> None:
         payload['checkOutDate']['month'] = int(data['date_out']['m'])
         payload['checkOutDate']['year'] = int(data['date_out']['y'])
         payload['rooms'][0]['adults'] = int(data['people_count'])
-        payload['resultsSize'] = int(data['hotels_count'])
+        # payload['resultsSize'] = int(data['hotels_count'])
         # print(data)
 
         response = requests.request("POST", url2, json=payload, headers=headers2)
@@ -247,7 +249,9 @@ def get_hotels_count(message: types.Message) -> None:
         id_price = dict()
         distance = list()
         index = 0
-        for hotel in response.json()['data']['propertySearch']['properties']:
+        rev_list = response.json()['data']['propertySearch']['properties']
+        rev_list.reverse()
+        for hotel in rev_list[:int(data['hotels_count'])]:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
             distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 

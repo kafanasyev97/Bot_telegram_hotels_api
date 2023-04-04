@@ -1,8 +1,8 @@
 from telebot import types
 from telebot.custom_filters import StateFilter
 from loader import bot
-from utils.set_bot_commands import set_default_commands
-import handlers
+from utilss.set_bot_commands import set_default_commands
+import handlerss
 
 
 @bot.message_handler()
