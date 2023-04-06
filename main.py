@@ -3,6 +3,7 @@ from telebot.custom_filters import StateFilter
 from loader import bot
 from utilss.set_bot_commands import set_default_commands
 import handlerss
+from databases.history_classes import db, User, Hotel
 
 
 @bot.message_handler()
@@ -14,6 +15,7 @@ def any(message: types.Message):
 
 
 if __name__ == '__main__':
+    db.create_tables([User, Hotel])
     set_default_commands(bot)
     bot.add_custom_filter(StateFilter(bot))
     bot.polling(none_stop=True)

@@ -4,7 +4,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from datetime import date, datetime, timedelta
-from statess.low_high import UserState
+from statess.lowprice_state import UserState
+from databases.history_classes import User, Hotel
 
 
 min_date = ''
@@ -14,7 +15,7 @@ url1 = "https://hotels4.p.rapidapi.com/locations/v3/search"
 url2 = "https://hotels4.p.rapidapi.com/properties/v2/list"
 url3 = "https://hotels4.p.rapidapi.com/properties/v2/detail"
 headers1 = {
-        "X-RapidAPI-Key": "4770d2cd46msh4e586a662880ae4p1ccec4jsn56e4f1115adc",
+        "X-RapidAPI-Key": "bb7ec06b11msh5f4c6b0fe0f3cf0p1a1a39jsn0814ed71a496",
         "X-RapidAPI-Host": "hotels4.p.rapidapi.com"
     }
 payload = {
@@ -48,7 +49,7 @@ payload = {
             }
 headers2 = {
                 "content-type": "application/json",
-                "X-RapidAPI-Key": "4770d2cd46msh4e586a662880ae4p1ccec4jsn56e4f1115adc",
+                "X-RapidAPI-Key": "bb7ec06b11msh5f4c6b0fe0f3cf0p1a1a39jsn0814ed71a496",
                 "X-RapidAPI-Host": "hotels4.p.rapidapi.com"
             }
 
@@ -64,6 +65,8 @@ payload_detail = {
 @bot.message_handler(commands=['lowprice'])
 def first_low(message: types.Message) -> None:
     bot.set_state(user_id=message.from_user.id, state=UserState.city, chat_id=message.chat.id)
+    with bot.retrieve_data(user_id=message.from_user.id, chat_id=message.chat.id) as data:
+        data['command'] = message.text
     bot.send_message(chat_id=message.chat.id, text='Введите город:')
 
 
@@ -212,6 +215,7 @@ def get_hotels_count(message: types.Message) -> None:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
             distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 
+        mess_db = User.create(command=data['command'], date=datetime.now(), user_id=message.from_user.id)
         for iden, price in id_price.items():
             payload_detail['propertyId'] = iden
             resp = requests.request("POST", url3, json=payload_detail, headers=headers2)
@@ -219,6 +223,7 @@ def get_hotels_count(message: types.Message) -> None:
             address = resp.json()['data']['propertyInfo']['summary']['location']['address']['firstAddressLine']
             result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}\nРасстояние до центра: {distance[index]} миль'
             bot.send_message(message.chat.id, text=result_text)
+            hotel_db = Hotel.create(name=name, address=address, price=price, distance=distance[index], req=mess_db)
             index += 1
 
         bot.delete_state(message.from_user.id, message.chat.id)
@@ -251,6 +256,7 @@ def get_hotels_count(message: types.Message) -> None:
             id_price[hotel['id']] = hotel['price']['options'][0]['formattedDisplayPrice']
             distance.append(hotel['destinationInfo']['distanceFromDestination']['value'])
 
+        mess_db = User.create(command=data['command'], date=datetime.now(), user_id=message.from_user.id)
         for iden, price in id_price.items():
             payload_detail['propertyId'] = iden
             resp = requests.request("POST", url3, json=payload_detail, headers=headers2)
@@ -260,6 +266,7 @@ def get_hotels_count(message: types.Message) -> None:
             result_text = f'Название отеля: {name}\nАдрес: {address}\nЦена за одну ночь: {price}' \
                           f'\nРасстояние до центра: {distance[index]} миль\nФотографии:'
             bot.send_message(message.chat.id, text=result_text)
+            hotel_db = Hotel.create(name=name, address=address, price=price, distance=distance[index], req=mess_db)
             index += 1
                 # photo = resp.json()['data']['propertyInfo']['propertyGallery']['images'][5]['image']['url']
             for num in range(int(data['photo_count'])):
