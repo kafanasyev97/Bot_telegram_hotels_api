@@ -1,8 +1,12 @@
 from telebot import TeleBot
 from telebot.storage import StateMemoryStorage
-from config_datas import config
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+TOKEN = os.getenv('BOT_TOKEN')
+API_KEY = os.getenv('API_KEY')
 
 storage = StateMemoryStorage()
-TOKEN = '6023364429:AAHhRuf-xjxivwjHNX_o0kFlkzyQZO6hVYc'
 bot = TeleBot(token=TOKEN, state_storage=storage)
-

@@ -2,6 +2,9 @@ from telebot.handler_backends import State, StatesGroup
 
 
 class UserStateBestdeal(StatesGroup):
+    """
+    Класс состояния для команды bestdeal.
+    """
     city = State()
     price_min = State()
     price_max = State()
