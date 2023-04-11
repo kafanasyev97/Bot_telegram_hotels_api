@@ -182,7 +182,7 @@ def choice_photo(call: types.CallbackQuery):
 
 @logger.catch()
 @bot.message_handler(state=UserState.photo_count)
-def get_hotels_count(message: types.Message) -> None:
+def photo_yes(message: types.Message) -> None:
     """
     Выводит пользователю всю информацию об отелях, включая фотографии.
 
