@@ -60,7 +60,7 @@ def callback(call):
 
 @logger.catch()
 @bot.message_handler(state=UserStateBestdeal.price_min)
-def get_hotels_count(message: types.Message) -> None:
+def min_price_func(message: types.Message) -> None:
     """
     Сохраняется минимальная стоимость проживания.
 
@@ -80,7 +80,7 @@ def get_hotels_count(message: types.Message) -> None:
 
 @logger.catch()
 @bot.message_handler(state=UserStateBestdeal.price_max)
-def get_hotels_count(message: types.Message) -> None:
+def max_price_func(message: types.Message) -> None:
     """
     Сохраняется максимальная стоимость проживания.
 
@@ -105,7 +105,7 @@ def get_hotels_count(message: types.Message) -> None:
 
 @logger.catch()
 @bot.message_handler(state=UserStateBestdeal.distance_min)
-def get_hotels_count(message: types.Message) -> None:
+def min_distance_func(message: types.Message) -> None:
     """
     Сохраняется минимальное расстояние до центра города.
 
@@ -125,7 +125,7 @@ def get_hotels_count(message: types.Message) -> None:
 
 @logger.catch()
 @bot.message_handler(state=UserStateBestdeal.distance_max)
-def get_hotels_count(message: types.Message) -> None:
+def max_distance_func(message: types.Message) -> None:
     """
     Сохраняется максимальное расстояние до центра города.
 
@@ -227,7 +227,7 @@ def calling(call):
 
 @logger.catch()
 @bot.callback_query_handler(func=lambda call: call.data.startswith('right'))
-def choice(call: types.CallbackQuery):
+def choice_photo(call: types.CallbackQuery):
     """
     Обрабатывает полученный ответ на вопрос про фотографии.
     Если ответ да, то переходит к следующему состоянию,
@@ -288,7 +288,7 @@ def choice(call: types.CallbackQuery):
 
 @logger.catch()
 @bot.message_handler(state=UserStateBestdeal.photo_count)
-def get_hotels_count(message: types.Message) -> None:
+def photo_yes(message: types.Message) -> None:
     """
     Выводит пользователю всю информацию об отелях, включая фотографии.
 
